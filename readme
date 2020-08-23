@@ -1,0 +1,5 @@
+# ipcalc(8) for plan 9
+
+What the title says.
+
+It only works with IPv4 networks. Patches to accept IPv6 are welcome.
