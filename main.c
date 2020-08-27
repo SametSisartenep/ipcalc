@@ -15,7 +15,7 @@ struct IPNet
 };
 
 void
-printip(uint addr)
+printip(u32int addr)
 {
 	uchar ip4[4];
 
@@ -60,7 +60,7 @@ void
 main(int argc, char *argv[])
 {
 	IPNet net;
-	uint addr, mask;
+	u32int addr, mask;
 	char *a, *m;
 
 	ARGBEGIN{
@@ -70,15 +70,15 @@ main(int argc, char *argv[])
 		usage();
 
 	a = argv[0];
-	addr = strtoul(a, &a, 10) << 24; a++;
-	addr |= strtoul(a, &a, 10) << 16; a++;
-	addr |= strtoul(a, &a, 10) << 8; a++;
-	addr |= strtoul(a, &a, 10);
+	addr = strtoul(a, &a, 10) << 24;
+	addr |= strtoul(++a, &a, 10) << 16;
+	addr |= strtoul(++a, &a, 10) << 8;
+	addr |= strtoul(++a, &a, 10);
 	m = argv[1];
-	mask = strtoul(m, &m, 10) << 24; m++;
-	mask |= strtoul(m, &m, 10) << 16; m++;
-	mask |= strtoul(m, &m, 10) << 8; m++;
-	mask |= strtoul(m, &m, 10);
+	mask = strtoul(m, &m, 10) << 24;
+	mask |= strtoul(++m, &m, 10) << 16;
+	mask |= strtoul(++m, &m, 10) << 8;
+	mask |= strtoul(++m, &m, 10);
 
 	net.addr = addr&mask;
 	net.mask = mask;
