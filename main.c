@@ -14,29 +14,41 @@ struct IPNet
 	int cidr;
 };
 
-void
-printip(u32int addr)
+#pragma varargck type "I" u32int
+#pragma varargck type "N" IPNet
+
+int
+Ifmt(Fmt *f)
 {
 	uchar ip4[4];
+	u32int addr;
+
+	addr = va_arg(f->args, u32int);
 
 	ip4[0] = addr>>24 & 0xff;
 	ip4[1] = addr>>16 & 0xff;
 	ip4[2] = addr>>8  & 0xff;
 	ip4[3] = addr     & 0xff;
 
-	print("%d.%d.%d.%d\n", ip4[0], ip4[1], ip4[2], ip4[3]);
+	return fmtprint(f, "%d.%d.%d.%d", ip4[0], ip4[1], ip4[2], ip4[3]);
 }
 
-void
-printipnet(IPNet net)
+int
+Nfmt(Fmt *f)
 {
-	print("network "); printip(net.addr);
-	print("netmask "); printip(net.mask);
-	print("minaddr "); printip(net.minaddr);
-	print("maxaddr "); printip(net.maxaddr);
-	print("bcast "); printip(net.bcast);
-	print("hosts %d\n", net.nhosts);
-	print("cidr %d\n", net.cidr);
+	IPNet net;
+	int n;
+
+	net = va_arg(f->args, IPNet);
+
+	n = fmtprint(f, "network %I\n", net.addr);
+	n += fmtprint(f, "netmask %I\n", net.mask);
+	n += fmtprint(f, "minaddr %I\n", net.minaddr);
+	n += fmtprint(f, "maxaddr %I\n", net.maxaddr);
+	n += fmtprint(f, "bcast %I\n", net.bcast);
+	n += fmtprint(f, "hosts %d\n", net.nhosts);
+	n += fmtprint(f, "cidr %d\n", net.cidr);
+	return n;
 }
 
 int
@@ -63,6 +75,8 @@ main(int argc, char *argv[])
 	u32int addr, mask;
 	char *a, *m;
 
+	fmtinstall('I', Ifmt);
+	fmtinstall('N', Nfmt);
 	ARGBEGIN{
 	default: usage();
 	}ARGEND;
@@ -87,7 +101,7 @@ main(int argc, char *argv[])
 	net.maxaddr = net.bcast-1;
 	net.nhosts = net.maxaddr-net.minaddr;
 	net.cidr = countones(net.mask);
-	printipnet(net);
+	print("%N", net);
 
 	exits(nil);
 }
