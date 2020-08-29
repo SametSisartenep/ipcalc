@@ -19,10 +19,10 @@ printip(u32int addr)
 {
 	uchar ip4[4];
 
-	ip4[0] = (addr>>24)&0xff;
-	ip4[1] = (addr>>16)&0xff;
-	ip4[2] = (addr>>8)&0xff;
-	ip4[3] = addr&0xff;
+	ip4[0] = addr>>24 & 0xff;
+	ip4[1] = addr>>16 & 0xff;
+	ip4[2] = addr>>8  & 0xff;
+	ip4[3] = addr     & 0xff;
 
 	print("%d.%d.%d.%d\n", ip4[0], ip4[1], ip4[2], ip4[3]);
 }
@@ -44,7 +44,7 @@ countones(u32int addr)
 {
 	int cnt, shift;
 
-	for(cnt = 0, shift = 31; cnt < 32 && (addr&(1<<shift)) != 0; cnt++, shift--)
+	for(cnt = 0, shift = 31; cnt < 32 && (addr & 1<<shift) != 0; cnt++, shift--)
 		;
 	return cnt;
 }
