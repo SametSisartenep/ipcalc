@@ -74,6 +74,7 @@ main(int argc, char *argv[])
 	IPNet net;
 	u32int addr, mask;
 	char *a, *m;
+	int cidr;
 
 	fmtinstall('I', Ifmt);
 	fmtinstall('N', Nfmt);
@@ -89,10 +90,15 @@ main(int argc, char *argv[])
 	addr |= strtoul(++a, &a, 10) << 8;
 	addr |= strtoul(++a, &a, 10);
 	m = argv[1];
-	mask = strtoul(m, &m, 10) << 24;
-	mask |= strtoul(++m, &m, 10) << 16;
-	mask |= strtoul(++m, &m, 10) << 8;
-	mask |= strtoul(++m, &m, 10);
+	if(strlen(m) <= 2){
+		cidr = strtol(m, nil, 10);
+		mask = ~0 << (32-cidr);
+	}else{
+		mask = strtoul(m, &m, 10) << 24;
+		mask |= strtoul(++m, &m, 10) << 16;
+		mask |= strtoul(++m, &m, 10) << 8;
+		mask |= strtoul(++m, &m, 10);
+	}
 
 	net.addr = addr&mask;
 	net.mask = mask;
