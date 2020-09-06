@@ -1,5 +1,6 @@
 #include <u.h>
 #include <libc.h>
+#include <ctype.h>
 
 typedef struct IPNet IPNet;
 
@@ -61,6 +62,26 @@ countones(u32int addr)
 	return cnt;
 }
 
+u32int
+getip4(char *s)
+{
+	u32int addr;
+	int octets;
+
+	addr = 0;
+	octets = 4;
+
+	do{
+		if(!isdigit(*s))
+			sysfatal("wrong ip address: expected a number");
+		addr |= strtoul(s, &s, 10) << --octets*8;
+		if(octets > 0 && *s != '.')
+			sysfatal("wrong ip address: expected a dot");
+	}while(*s++ && octets > 0);
+
+	return addr;
+}
+
 void
 usage(void)
 {
@@ -73,7 +94,6 @@ main(int argc, char *argv[])
 {
 	IPNet net;
 	u32int addr, mask;
-	char *a, *m;
 	int cidr;
 
 	fmtinstall('I', Ifmt);
@@ -84,21 +104,13 @@ main(int argc, char *argv[])
 	if(argc != 2)
 		usage();
 
-	a = argv[0];
-	addr = strtoul(a, &a, 10) << 24;
-	addr |= strtoul(++a, &a, 10) << 16;
-	addr |= strtoul(++a, &a, 10) << 8;
-	addr |= strtoul(++a, &a, 10);
-	m = argv[1];
-	if(strlen(m) <= 2){
-		cidr = strtol(m, nil, 10);
+	addr = getip4(argv[0]);
+	if(strlen(argv[1]) <= 2){
+		cidr = strtol(argv[1], nil, 10);
+		assert(cidr > 0 && cidr <= 32);
 		mask = ~0 << (32-cidr);
-	}else{
-		mask = strtoul(m, &m, 10) << 24;
-		mask |= strtoul(++m, &m, 10) << 16;
-		mask |= strtoul(++m, &m, 10) << 8;
-		mask |= strtoul(++m, &m, 10);
-	}
+	}else
+		mask = getip4(argv[1]);
 
 	net.addr = addr&mask;
 	net.mask = mask;
