@@ -57,6 +57,18 @@ countones(u32int addr)
 {
 	int cnt, shift;
 
+	for(cnt = 0, shift = 31; shift >= 0; shift--)
+		if((addr & 1<<shift) != 0)
+			cnt++;
+	return cnt;
+}
+
+/* returns the most-significant ones */
+int
+countmsones(u32int addr)
+{
+	int cnt, shift;
+
 	for(cnt = 0, shift = 31; cnt < 32 && (addr & 1<<shift) != 0; cnt++, shift--)
 		;
 	return cnt;
@@ -80,6 +92,14 @@ getip4(char *s)
 	}while(*s++ && octets > 0);
 
 	return addr;
+}
+
+int
+checkmask(u32int mask)
+{
+	if(countones(mask) != countmsones(mask))
+		return -1;
+	return 0;
 }
 
 void
@@ -109,8 +129,11 @@ main(int argc, char *argv[])
 		cidr = strtol(argv[1], nil, 10);
 		assert(cidr > 0 && cidr <= 32);
 		mask = ~0 << (32-cidr);
-	}else
+	}else{
 		mask = getip4(argv[1]);
+		if(checkmask(mask) < 0)
+			sysfatal("invalid mask");
+	}
 
 	net.addr = addr&mask;
 	net.mask = mask;
@@ -118,7 +141,7 @@ main(int argc, char *argv[])
 	net.minaddr = net.addr+1;
 	net.maxaddr = net.bcast-1;
 	net.nhosts = net.maxaddr-net.minaddr;
-	net.cidr = countones(net.mask);
+	net.cidr = countmsones(net.mask);
 	print("%N", net);
 
 	exits(nil);
