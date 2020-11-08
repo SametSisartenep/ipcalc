@@ -142,10 +142,20 @@ main(int argc, char *argv[])
 	net.addr = addr&mask;
 	net.mask = mask;
 	net.bcast = addr|~mask;
-	net.minaddr = net.addr+1;
-	net.maxaddr = net.bcast-1;
-	net.nhosts = net.maxaddr-net.minaddr;
 	net.cidr = countmsones(net.mask);
+
+	if(net.cidr < 32){
+		/* see RFC3021 */
+		net.minaddr = net.addr;
+		net.maxaddr = net.bcast;
+		if(net.cidr <= 30){
+			net.minaddr++;
+			net.maxaddr--;
+		}
+	}else
+		net.minaddr = net.maxaddr = net.addr;
+
+	net.nhosts = net.maxaddr-net.minaddr + 1;
 	print("%N", net);
 
 	exits(nil);
