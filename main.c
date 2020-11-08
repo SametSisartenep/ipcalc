@@ -55,15 +55,18 @@ Nfmt(Fmt *f)
 int
 countones(u32int addr)
 {
-	int cnt, shift;
+	int cnt;
 
-	for(cnt = 0, shift = 31; shift >= 0; shift--)
-		if((addr & 1<<shift) != 0)
+	cnt = 0;
+	while(addr > 0){
+		if((addr & 1) != 0)
 			cnt++;
+		addr >>= 1;
+	}
 	return cnt;
 }
 
-/* returns the most-significant ones */
+/* returns the amount of consecutive, most-significant ones */
 int
 countmsones(u32int addr)
 {
@@ -125,9 +128,10 @@ main(int argc, char *argv[])
 		usage();
 
 	addr = getip4(argv[0]);
-	if(strlen(argv[1]) <= 2){
+	if(strchr(argv[1], '.') == nil){
 		cidr = strtol(argv[1], nil, 10);
-		assert(cidr > 0 && cidr <= 32);
+		if(cidr < 0 || cidr > 32)
+			sysfatal("invalid cidr/prefix");
 		mask = ~0 << (32-cidr);
 	}else{
 		mask = getip4(argv[1]);
